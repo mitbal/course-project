@@ -1,0 +1,193 @@
+\documentclass[a4paper]{article}
+
+\usepackage[colorlinks=true, pdfstartview=FitV, linkcolor=blue,citecolor=blue, urlcolor=blue]{hyperref}
+
+\title{Improving image classification with CNNs by exploiting
+  selectivity in search \& training data}
+\author{Muhammad Iqbal Tawakal\\
+ Supervisor: Josephine Sullivan}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem: Image classification}
+
+The problem we will tackle in this project is image
+classification. Given an image predict a set of labels (from a
+pre-defined list) that correspond to the objects in the image. This
+multi-class classification problem is typically solved using a set of
+binary classifiers. Each classifier predicts the presence or absence
+of a particular object. We will use the Image Classification
+Competition dataset from
+\href{http://pascallin.ecs.soton.ac.uk/challenges/VOC/}{PASCAL Visual
+  Object Classes datasets} to assess the classifiers we develop.
+
+\section{Background: Image classification with CNNs}
+
+Deep learning methods, in particular convolutional neural networks
+(CNNs)\cite{LeCun:ieee:98} trained in a supervised fashion, are
+presently the most powerful approach to image classification problems
+\cite{Krizhevsky:nips:12} (absolute performance gains of up to 25\%
+over the previous state-of-the-art methods of 3 years ago). And in
+this project we will investigate two strategies to improve the
+performance of CNNs for the task of image classification, in line with
+research already started at CVAP
+\cite{Razavian:arxiv:14,Hossein:arxiv:14}. Before describing the
+strategies we will employ we will introduce some background detail.
+
+
+A by-product of training a large and deep CNN to perform image
+classification is that you also learn powerful image
+representations. The image representation corresponds to the responses
+of the network at a layer prior to the output layer. Such an image
+representation, if the CNN is sufficiently large and appropriately
+trained, can be used to solve very many visual recognition problems
+\cite{Razavian:arxiv:14} with the addition of a simple linear
+classifier such as an SVM. The first task we assume 
+
+
+%% CNNs have highlighted the benefit of coupling the learning of the
+%% hierarchical feature descriptors for images with learning the
+%% classifier.  But why have neural-networks learnt with the
+%% back-propagation algorithm, an idea and training algorithm that have
+%% been around for decades, suddenly become so effective? The succinct
+%% answer is: data, depth and GPUs.  Firstly, the amount of labeled
+%% training data available for training has exploded. For example in the
+%% \href{http://www.image-net.org}{ImageNet} database there are over 1
+%% million images labelled with instances from 1000 visual classes
+%% \cite{Russakovsky:iccv:13}.  This data combined with regularization
+%% reduces the risk of overfitting. Next it was realized that deep
+%% networks with many layers are a much more efficient way to represent
+%% complex functions, in terms of the number of parameters needed, than
+%% broad shallow networks \cite{Bengio:pami:13}. Thus a manageable number
+%% of parameters can represent a very flexible class of functions. The
+%% final piece of the puzzle are GPUs. The parameters of the network are
+%% learnt by back-propagation (involving convolutions and matrix
+%% multiplications) and an iterative stochastic gradient descent
+%% algorithm applied with potentially very slow learning rates. Training
+%% requires an enormous number of iterations as one makes multiple passes
+%% through the labeled data. It is not possible to perform all the
+%% necessary computations in a feasible time with CPUs but it is feasible
+%% with GPU implementations, like
+%% \href{http://code.google.com/p/cuda-convnet/}{\texttt{cuda-convnet}}.
+
+
+%% \begin{itemize}
+%% \item 
+%% \href{http://arxiv.org/abs/1403.6382}{CNN Features off-the-shelf: an Astounding Baseline for Recognition}
+
+%% \item 
+%% \href{http://www.cs.berkeley.edu/~rbg/papers/r-cnn-cvpr.pdf}{Rich feature hierarchies for accurate object detection and semantic segmentation}
+%% \end{itemize}
+
+\section{Research Agenda}
+
+Our project will focus on two somewhat complementary but related
+investigations. In the first case we will assume that we have a fixed
+CNN image representation and try to find if and where a particular
+object type is in image. The hope is that performing this search will
+improve image classification.  The second focus will be on learning a
+better CNN image representation by mining a large dataset for new
+positive and negative examples of a class. These ideas are now
+explained in more detail.
+
+
+\subsection{Selective Search}
+
+Normally, one extracts a single CNN representation for the whole
+image. But what happens if the object of interest occupies only a
+small portion of the image? The representation is likely to be
+dominated by the other larger objects in the image. A better strategy
+is to consider many different sub-patch(es) of the image that may
+correspond to the object and then extract a CNN representation from
+each patch and apply the classifier to each one. The image is then
+classified as containing the object of interest if one of the
+sub-patches produces a positive result. The strategy of generating
+object sub-regions is termed selective search. Luckily there exist
+several algorithms to quickly and reliably highlight such sub-patches
+\cite{Sande:iccv:11}. These region selection algorithms typically
+generate $~$2000 sub-patches while still guaranteeing with a high
+probability that the objects in the image are represented by a subset
+of the extracted patches.
+
+Recent results in the literature \cite{Girshick:cvpr:14} show that
+performing selective search does improve classification accuracy. Our
+goal is to re-confirm this result and quantify by how much it improves
+results.
+
+\subsection{Fine-tuning the CNN representation with a large number
+    of selected training examples} 
+
+It is an empirical finding that training a CNN with larger and more
+diverse data produces a more powerful classifier
+\cite{Bissacco:iccv:13,Sermanet:iclr:13}. With current hardware,
+however, it is not possible to use the whole ImageNet database
+$\sim$20 million images during training. To give an idea of why this
+is not possible it takes using state-of-the-art GPUs $~$3 weeks to
+train a large network $\sim$50 million parameters with 1 million
+images from ImageNet. Therefore we propose something in the spirit of:
+    \begin{enumerate}
+    \item Train a CNN using 1 million images from ImageNet. (We
+      already have access to such pre-trained CNNs.)
+    %% \item Train a set of simple classifiers to identify the visual
+    %%   objects defined by PASCAL using the CNN image representation. 
+    \item Apply the CNN to sub-patches extracted from a random subset
+      of the images in ImageNet not used during training. We assume
+      these patches are labelled. Those that are not confidently
+      correctly classified by the CNN are recorded.
+    \item Fine-tune the network with these mis-classified examples
+      using iterations of the back-propagation in online mode.
+    \item Stop if the performance of the network saturates on a
+      validation set. Otherwise return to step 2.
+    \end{enumerate}
+It has been shown that fine-tuning with appropriate data can help
+\cite{Agrawal:eccv:14} for the tasks of object detection and fine
+grained classification. However, it has not been shown how much it
+can help when it is allied to selectively choosing the training data. 
+
+
+\subsection{Summary of research agenda}
+To summarize in this project we will be investigate if these two procedures
+\begin{enumerate}
+  \item selective search
+  \item fine-tuning a CNN with a large number of selected training examples
+\end{enumerate}
+can improve the accuracy of image classification using CNNs and if
+they do to quantify by how much. 
+
+\section{Time Plan for the research}
+
+\subsection{Selective search}
+\begin{itemize}
+  \item Install software.
+  \item Extract CNN feature descriptions from object proposal regions
+    for both the test and training images.
+  \item Train the set of binary classifiers using the object proposal training regions. 
+  \item Apply SVMs to the test set and aggregate the results to
+    perform image classification.
+\end{itemize}
+
+
+\subsection{Selective fine-tuning}
+
+\begin{itemize}
+  \item Mine the ImageNet database for hard positive and negative examples.
+  \item Update the parameters of the CNN with these new examples using
+    stochastic gradient descent and then repeat these two tasks.
+\end{itemize}
+
+
+
+\bibliographystyle{plain}
+\bibliography{project}
+
+\end{document}
+
+
+
+
+
+
+
