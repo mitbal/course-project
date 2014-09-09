@@ -12,10 +12,11 @@
 
 \maketitle
 
+
 \section{Problem: Image classification}
 
 The problem we will tackle in this project is image
-classification. Given an image predict a set of labels (from a
+classification. Given an image, predict a set of labels (from a
 pre-defined list) that correspond to the objects in the image. This
 multi-class classification problem is typically solved using a set of
 binary classifiers. Each classifier predicts the presence or absence
@@ -23,6 +24,11 @@ of a particular object. We will use the Image Classification
 Competition dataset from
 \href{http://pascallin.ecs.soton.ac.uk/challenges/VOC/}{PASCAL Visual
   Object Classes datasets} to assess the classifiers we develop.
+This particular classifier that we develop wil use the feature extracted 
+from a convolutional neural network (CNN). We will try to improve the performance 
+by using selective search region proposal and fine-tuning with additional data.
+A more detailed explanation is going to be described in the following section.
+
 
 \section{Background: Image classification with CNNs}
 
@@ -35,8 +41,7 @@ this project we will investigate two strategies to improve the
 performance of CNNs for the task of image classification, in line with
 research already started at CVAP
 \cite{Razavian:arxiv:14,Hossein:arxiv:14}. Before describing the
-strategies we will employ we will introduce some background detail.
-
+strategies we will employ, we will introduce some background detail.
 
 A by-product of training a large and deep CNN to perform image
 classification is that you also learn powerful image
@@ -45,45 +50,10 @@ of the network at a layer prior to the output layer. Such an image
 representation, if the CNN is sufficiently large and appropriately
 trained, can be used to solve very many visual recognition problems
 \cite{Razavian:arxiv:14} with the addition of a simple linear
-classifier such as an SVM. The first task we assume 
+classifier such as SVM.
 
-
-%% CNNs have highlighted the benefit of coupling the learning of the
-%% hierarchical feature descriptors for images with learning the
-%% classifier.  But why have neural-networks learnt with the
-%% back-propagation algorithm, an idea and training algorithm that have
-%% been around for decades, suddenly become so effective? The succinct
-%% answer is: data, depth and GPUs.  Firstly, the amount of labeled
-%% training data available for training has exploded. For example in the
-%% \href{http://www.image-net.org}{ImageNet} database there are over 1
-%% million images labelled with instances from 1000 visual classes
-%% \cite{Russakovsky:iccv:13}.  This data combined with regularization
-%% reduces the risk of overfitting. Next it was realized that deep
-%% networks with many layers are a much more efficient way to represent
-%% complex functions, in terms of the number of parameters needed, than
-%% broad shallow networks \cite{Bengio:pami:13}. Thus a manageable number
-%% of parameters can represent a very flexible class of functions. The
-%% final piece of the puzzle are GPUs. The parameters of the network are
-%% learnt by back-propagation (involving convolutions and matrix
-%% multiplications) and an iterative stochastic gradient descent
-%% algorithm applied with potentially very slow learning rates. Training
-%% requires an enormous number of iterations as one makes multiple passes
-%% through the labeled data. It is not possible to perform all the
-%% necessary computations in a feasible time with CPUs but it is feasible
-%% with GPU implementations, like
-%% \href{http://code.google.com/p/cuda-convnet/}{\texttt{cuda-convnet}}.
-
-
-%% \begin{itemize}
-%% \item 
-%% \href{http://arxiv.org/abs/1403.6382}{CNN Features off-the-shelf: an Astounding Baseline for Recognition}
-
-%% \item 
-%% \href{http://www.cs.berkeley.edu/~rbg/papers/r-cnn-cvpr.pdf}{Rich feature hierarchies for accurate object detection and semantic segmentation}
-%% \end{itemize}
 
 \section{Research Agenda}
-
 Our project will focus on two somewhat complementary but related
 investigations. In the first case we will assume that we have a fixed
 CNN image representation and try to find if and where a particular
@@ -93,9 +63,7 @@ better CNN image representation by mining a large dataset for new
 positive and negative examples of a class. These ideas are now
 explained in more detail.
 
-
 \subsection{Selective Search}
-
 Normally, one extracts a single CNN representation for the whole
 image. But what happens if the object of interest occupies only a
 small portion of the image? The representation is likely to be
@@ -131,8 +99,6 @@ images from ImageNet. Therefore we propose something in the spirit of:
     \begin{enumerate}
     \item Train a CNN using 1 million images from ImageNet. (We
       already have access to such pre-trained CNNs.)
-    %% \item Train a set of simple classifiers to identify the visual
-    %%   objects defined by PASCAL using the CNN image representation. 
     \item Apply the CNN to sub-patches extracted from a random subset
       of the images in ImageNet not used during training. We assume
       these patches are labelled. Those that are not confidently
@@ -147,47 +113,55 @@ It has been shown that fine-tuning with appropriate data can help
 grained classification. However, it has not been shown how much it
 can help when it is allied to selectively choosing the training data. 
 
-
 \subsection{Summary of research agenda}
-To summarize in this project we will be investigate if these two procedures
+To summarize in this project we will investigate whether these two procedures
 \begin{enumerate}
   \item selective search
   \item fine-tuning a CNN with a large number of selected training examples
 \end{enumerate}
 can improve the accuracy of image classification using CNNs and if
-they do to quantify by how much. 
+they do, we'd like to quantify by how much.
+
+The second goal might be too big in scope for this project 
+and might not be finished in timely manner. One of the reason can be addressed to 
+the long training time of CNN (It can takes 2-3 weeks in general for big dataset). 
+This project then can be continued, for example, as a thesis work in the future.
+
 
 \section{Time Plan for the research}
 
 \subsection{Selective search}
 \begin{itemize}
-  \item Install software.
-  \item Extract CNN feature descriptions from object proposal regions
+  \item Prepare the working environment by installing required software libraries
+    and their dependencies.
+  \item Extract CNN feature descriptions from object proposal regions produced by selective search 
     for both the test and training images.
-  \item Train the set of binary classifiers using the object proposal training regions. 
+  \item Train the set of binary classifiers (SVM) using the extracted features from previous step.
   \item Apply SVMs to the test set and aggregate the results to
     perform image classification.
+  \item Compare the accuracy or other performance measurement with or without selective search.
+  \item Experiment with different parameter (e.g. different layer of image representation) and evaluate the result.
 \end{itemize}
-
 
 \subsection{Selective fine-tuning}
-
 \begin{itemize}
-  \item Mine the ImageNet database for hard positive and negative examples.
-  \item Update the parameters of the CNN with these new examples using
-    stochastic gradient descent and then repeat these two tasks.
+  \item Mine the ImageNet database for hard positive and negative examples. One way to select 
+    the image from the abundant data is by picking misclassified data.
+  \item Update the parameters of the pre-trained CNN model with these new examples using
+    stochastic gradient descent.
+  \item Repeat these two tasks until the network's performance saturates,
+    as indicated with the rate of accuracy.
 \end{itemize}
 
+
+\section{Evaluation}
+At the end of this project, a written report of 14-16 pages in length will be produced.
+This report is going to explain in detail about the method used, the improvement achieved, 
+the analysis of the outcome, and the difference between what is planned and the actual implementation.
 
 
 \bibliographystyle{plain}
 \bibliography{project}
 
 \end{document}
-
-
-
-
-
-
 
