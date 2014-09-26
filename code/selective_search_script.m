@@ -5,6 +5,7 @@ setParams;
 addpath('SelectiveSearchCodeIJCV');
 addpath('SelectiveSearchCodeIJCV/Dependencies');
 addpath([params.caffePrf, 'matlab/caffe/']);
+addpath('/home/iqbal/liblinear-1.93/matlab');
 
 % Load all VOCImage
 VOC07path = [params.dataPrf, 'VOC07/'];
@@ -37,11 +38,11 @@ for i=1:length(testImgs)
 end
 
 % Extract the CNN features for all proposed regions
-[trainBoxes, trainFcell] = extract_feature_all_boxes(trainImgs, params);
+%[trainBoxes, trainFcell] = extract_feature_all_boxes(trainImgs, params);
 [testBoxes, testFcell] = extract_feature_all_boxes(testImgs, params);
 
 % Convert from cell to matrix
-trainF = zeros(length(trainFcell), length(trainFcell{1}));
+%trainF = zeros(length(trainFcell), length(trainFcell{1}));
 testF = zeros(length(testFcell), length(testFcell{1}));
 
 for i=1:length(trainFcell)
@@ -53,5 +54,6 @@ end
 
 % Save the output to file
 featureParams = [num2str(params.layerInd),'_',num2str(params.numJitter),'_',num2str(params.modelItr),'_',num2str(params.modelDataset)];
-save(['../data/', params.model,'/', 'VOC07', featureParams,'.mat'], 'trainBoxes', 'trainF', 'testBoxes', 'test');
+%save(['../data/', params.model,'/', 'VOC07', featureParams,'.mat'], 'trainBoxes', 'trainF', 'testBoxes', 'testF');
+save(['../data/', params.model, '/', 'VOC07-ss', featureParams, '.mat'], 'testBoxes', 'testF');
 
