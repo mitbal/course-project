@@ -26,12 +26,11 @@ end
 
 if draw
     % plot precision/recall
-	figure(1);
-    plot(rec,prec,'-');
+    h = plot(rec,prec,'-');
     grid;
     xlabel 'recall'
     ylabel 'precision'
     title(['AP= ' num2str(ap)]);
-	saveas(1, ['../plot/',cli,'_',ci], 'png');
+	saveas(h, ['../plot/',num2str(cli),'_',num2str(ci)], 'png');
 end
 
