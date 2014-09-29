@@ -40,14 +40,14 @@ function test_selective_search()
     				scores_sum(ii, :) = sum(dec_value(1:boxes(ii), :));
     				scores_max(ii, :) = max(dec_value(1:boxes(ii), :));
     			else
-    				scores_sum(ii, :) = sum(dec_value(boxes(ii-1):boxes(ii), :));
-    				scores_max(ii, :) = max(dec_value(boxes(ii-1):boxes(ii), :));
+    				scores_sum(ii, :) = sum(dec_value(boxes(ii-1)+1:boxes(ii), :));
+    				scores_max(ii, :) = max(dec_value(boxes(ii-1)+1:boxes(ii), :));
     			end
     		end
 
     		% Calculate precision, recall, and average precision
     		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli));
-    		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli));
+    		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli))
     	end
     end
 
