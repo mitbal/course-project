@@ -45,9 +45,9 @@ end
 %trainF = zeros(length(trainFcell), length(trainFcell{1}));
 testF = zeros(length(testFcell), length(testFcell{1}));
 
-for i=1:length(trainFcell)
-	trainF(i, :) = trainFcell{i};
-end
+%for i=1:length(trainFcell)
+%	trainF(i, :) = trainFcell{i};
+%end
 for i=1:length(testFcell)
 	testF(i, :) = testFcell{i};
 end
@@ -55,5 +55,5 @@ end
 % Save the output to file
 featureParams = [num2str(params.layerInd),'_',num2str(params.numJitter),'_',num2str(params.modelItr),'_',num2str(params.modelDataset)];
 %save(['../data/', params.model,'/', 'VOC07', featureParams,'.mat'], 'trainBoxes', 'trainF', 'trainL', 'testBoxes', 'testF', 'testL');
-save(['../data/', params.model, '/', 'VOC07-ss', featureParams, '.mat'], 'testBoxes', 'testF', 'testL');
+save(['../data/', params.model, '/', 'VOC07-ss', featureParams, '.mat'], 'testBoxes', 'testF', 'testL', '-v7.3');
 
