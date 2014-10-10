@@ -5,15 +5,15 @@ addpath('/home/iqbal/liblinear-1.93/matlab');
 % This is the second optimized code by using simple dot product to perform the prediction
 
 % Load to get training data label due to liblinear bug
+feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
+					'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
 load(['../data/', params.model, '/', 'VOC07_Feat_', feature_params, '.mat']);
 % Only need train label, delete everything else
-clear trainF, testF, testL
+clear trainF; clear testF; clear testL;
 
 % Load the extracted data
 disp(['Load extracted data']);
 tic
-feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
-					'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
 features_name = ['../data/', params.model, '/', 'VOC07-ss', feature_params, '.mat'];
 load(features_name);
 toc
@@ -89,10 +89,10 @@ for ci=1:num_c
 		boxes = cumsum(testBoxes);
 		for ii=1:num_imgs
 			if ii == 1
-				scores_sum(ii) = sum(dec_value(1:boxes(ii)));
+				scores_sum(ii) = mean(dec_value(1:boxes(ii)));
 				scores_max(ii) = max(dec_value(1:boxes(ii)));
 			else
-				scores_sum(ii) = sum(dec_value(boxes(ii-1)+1:boxes(ii)));
+				scores_sum(ii) = mean(dec_value(boxes(ii-1)+1:boxes(ii)));
 				scores_max(ii) = max(dec_value(boxes(ii-1)+1:boxes(ii)));
 			end
 		end
