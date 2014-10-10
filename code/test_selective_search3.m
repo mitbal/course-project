@@ -4,6 +4,11 @@ addpath('/home/iqbal/liblinear-1.93/matlab');
 % training is using data without region proposal (standard)
 % This is the second optimized code by using simple dot product to perform the prediction
 
+% Load to get training data label due to liblinear bug
+load(['../data/', params.model, '/', 'VOC07_Feat_', feature_params, '.mat']);
+% Only need train label, delete everything else
+clear trainF, testF, testL
+
 % Load the extracted data
 disp(['Load extracted data']);
 tic
@@ -12,9 +17,6 @@ feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
 features_name = ['../data/', params.model, '/', 'VOC07-ss', feature_params, '.mat'];
 load(features_name);
 toc
-
-% Load to get training data label due to liblinear bug
-load(['../data/', params.model, '/', 'VOC07_Feat_', feature_params, '.mat']);
 
 % Load pre-trained model
 disp(['Load pre-trained model']);
