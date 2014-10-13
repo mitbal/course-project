@@ -27,12 +27,12 @@ end
 toc
 train_sums = sum(abs(trainF));
 tic
-for i=1:size(testF, 1)
-    testF2(i, :) = testF2(i, :) ./ train_sums;
+for i=1:size(trainF, 1)
+    trainF(i, :) = trainF(i, :) ./ train_sums;
 end
 toc
 tic
-for i=1:size(testF, 1)
+for i=1:size(trainF, 1)
     trainF(i, :) = trainF(i, :) ./ sqrt(sum(trainF(i, :).^2));
 end
 toc
@@ -41,7 +41,7 @@ toc
 trainL(trainL == 0) = 1;
 
 num_class = 20;
-num_c = 12;
+num_c = 10;
 
 % Penalty parameter for SVM
 C = 0.1;
@@ -65,27 +65,32 @@ for ii=1:size(boxes, 1)
     trainL2(start_index:end_index, :) = repmat(trainL(ii, :), [boxes(ii) 1]);
 end
 
+% Save the normalized feature
+save('../data/temp.mat', 'trainF');
+
 % Search the best parameter for SVM
-for ci=1:num_c
-    for cli=1:num_class
+for cli=1:num_class
+    % load the training data, again
+    load('../data/temp.mat');
+    % Divide the dataset into positive and negative class
+    index = trainL2(:, cli) > 0;
+    Sp = trainF(index, :);
+    numPos = size(Sp, 1);
+
+    index = trainL2(:, cli) < 0;
+    Sn = trainF(index, :);
+    numNeg = size(Sn, 1);
+    Snprime = Sn(1:numPos, :);
+
+    clear trainF;
+
+    for ci=1:num_c
         disp(['Now training data from class: ', num2str(cli), ' and with C: ', num2str(ci)]);
         tic
 
-        % Divide the dataset into positive and negative class
-        index = trainL2(:, cli) > 0;
-        Sp = trainF(index, :);
-        numPos = size(Sp, 1);
-
-        index = trainL2(:, cli) < 0;
-        Sn = trainF(index, :);
-        numNeg = size(Sn, 1);
-
-        index = randperm(numNeg);
-        Snprime = Sn(index(1:numPos, :));
-
         for ii=1:5
             numNeg = size(Snprime, 1);
-            disp(['Iteration ii: ', num2str(ii), ' The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);
+            disp(['Iteration: ', num2str(ii), ' The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);
             D = [Sp; Snprime];
             sparse_D = sparse(D);
             clear D;
