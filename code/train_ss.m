@@ -1,6 +1,7 @@
 function [models, train_sums] = train_ss(cli)
 % train per class
 
+    setParams;
 	% Load the extracted data
 	disp(['Load extracted training data...']);
 	tic
@@ -34,13 +35,14 @@ function [models, train_sums] = train_ss(cli)
 
 	% Penalty parameter for SVM
 	num_c = 8;
+    num_class = 20;
 	C = 0.1;
 	for i=1:num_c
 	    Cs(i) = C;
 	    C = C*2;
 	end
 
-	%% Append training label
+	% Append training label
 	disp(['Append training label...']);
 	trainL2 = zeros(size(trainF, 1), num_class);
 	boxes = cumsum(trainBoxes);
@@ -61,20 +63,16 @@ function [models, train_sums] = train_ss(cli)
 
     index = trainL2(:, cli) < 0;
     Sn = trainF(index, :);
-    numNeg = size(Sn, 1);
-    negIndex = 1:numPos;
-    Snprime = Sn(negIndex, :);
-
     clear trainF;
 
     for ci=1:num_c
         disp(['Now training data from class: ', num2str(cli), ' and with C: ', num2str(ci)]);
         tic
 
+        Snprime = Sn(1:numPos, :);
         numNeg = size(Snprime, 1);
         disp(['Iteration: 1 ', 'The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);
         D = sparse([Sp; Snprime]);
-
         clear Snprime;
 
         trainL3 = [ones(numPos,1); -ones(numNeg, 1)];
@@ -94,10 +92,11 @@ function [models, train_sums] = train_ss(cli)
         tic
         disp(['Iteration: 2 ', 'The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);
         trainL3 = [ones(numPos, 1); -ones(numNeg, 1)];
-        model = liblinear(trainL3, D, ['-c ', num2str(Cs(ci)) ' -s 2']);
+        model = liblinear_train(trainL3, D, ['-c ', num2str(Cs(ci)) ' -s 2']);
+        clear D;
         toc
 
-        % Find out how much misclassified negative data
+        % Find out how many misclassified negative data
         dec = model.w * Sn';
         index = dec > 0;
         sum(index)
