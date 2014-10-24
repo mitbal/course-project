@@ -83,6 +83,13 @@ function [models, train_sums] = train_ss(cli)
         dec = model.w * Sn';
         index = dec > 0;
         Snprime = [Sn(1:numPos, :); Sn(index, :)];
+        
+        % Limit the total number of samples to 400,000 due to memory
+        % constraint
+        sisa = 400000 - numPos;
+        if size(Snprime, 1) > sisa
+            Snprime = Snprime(1:sisa, :);
+        end
 
         % Retrain using hard negative training data
         D = sparse([Sp; Snprime]);
