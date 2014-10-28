@@ -15,7 +15,7 @@ toc
 % Load pre-trained model
 disp(['Load pre-trained model']);
 tic
-model_name = ['../models/caffe/VOC07-ss.mat'];
+model_name = ['../models/caffe/VOC07-ss2.mat'];
 load(model_name);
 toc
 
@@ -48,7 +48,7 @@ end
 
 % It's prediction time
 for ci=1:num_c
-	for cli=1:num_classes
+	for cli=2:9
 
 		tic
 		model = models{cli, ci};
@@ -68,7 +68,7 @@ for ci=1:num_c
 		end
 		toc
 
-		% Aggregate the result. There are two approaches, the maximum value and the sum.
+		% Aggregate the result. There are two approaches, the maximum value and the mean.
 		disp(['Aggregate result...']);
 		tic
 		num_imgs = size(testL, 1);
@@ -87,12 +87,12 @@ for ci=1:num_c
 
 		% Calculate precision, recall, and average precision
 		disp(['Calculate precision, recall, and average precision...']);
-		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli), cli, ci);
-		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli), cli, ci)
+		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli), cli, ci)
+		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli), cli, ci);
 		toc
 
 		% Save the result to file
 		disp(['Saving...']);
-		save(['../results/', params.model, '/', 'VOC07-ss', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
+		save(['../results/', params.model, '/', 'VOC07-sstrain', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
 	end
 end
