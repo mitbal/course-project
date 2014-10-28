@@ -10,11 +10,11 @@ VOC07path = '/home/iqbal/data/VOC07/';
 imdirpath = [VOC07path, 'VOCdevkit/VOC2007/JPEGImages/'];
 trainImgs = textread([VOC07path, 'VOCdevkit/VOC2007/ImageSets/Main/trainval.txt'], '%s');
 annopath = [VOC07path, 'VOCdevkit/VOC2007/Annotations/'];
-%num_train = length(trainImgs);
-num_train = 3;
+num_train = length(trainImgs);
 
-counter = zeros(20, 1);
-features = cell(20, 1);
+labels = cell(1);
+features = cell(1);
+counter = 1;
 
 for ii=1:num_train
     impath = [imdirpath trainImgs{ii} '.jpg'];
@@ -22,22 +22,25 @@ for ii=1:num_train
 	rec = PASreadrecord([annopath trainImgs{ii} '.xml']);
 
 	num_object = size(rec.objects, 2);
+    disp(['Image: ' num2str(ii)]);
 	for jj=1:num_object
 		label = rec.objects(jj).class;
 		IndexC = strfind(params.VOCclasses, label);
 		Index = find(not(cellfun('isempty', IndexC)));
-
+        disp(['  Object: ' num2str(jj) ' class: ' label]);
+        
 		x = rec.objects(jj).bndbox.xmin;
 		y = rec.objects(jj).bndbox.ymin;
 		w = rec.objects(jj).bndbox.xmax - x;
 		h = rec.objects(jj).bndbox.ymax - y;
 
-		patch = im(y:y+h, x:x+w);
+		patch = im(y:y+h, x:x+w, :);
 
 		[rep, ~, ~] = caffe_features(patch, params);
-		counter(Index) = counter(Index)+1;
-		features{Index, counter(Index)} = rep;
+		labels{counter} = Index;
+		features{counter} = mean(rep, 2);
+        counter = counter + 1;
 	end
 end
 
-save('../data/caffe/positive_samples.mat', 'features');
+save('../data/caffe/positive_samples.mat', 'features', 'labels', '-v7.3');
