@@ -16,6 +16,7 @@ labels = cell(1);
 features = cell(1);
 counter = 1;
 
+tic
 for ii=1:num_train
     impath = [imdirpath trainImgs{ii} '.jpg'];
 	im = imread(impath);
@@ -42,5 +43,6 @@ for ii=1:num_train
         counter = counter + 1;
 	end
 end
+toc
 
 save('../data/caffe/positive_samples.mat', 'features', 'labels', '-v7.3');
