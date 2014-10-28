@@ -6,7 +6,7 @@ params.dataPrf = '/home/iqbal/data/';	% Location to save the dataset
 params.caffePrf = '/home/iqbal/caffe/';	% Location to caffe installation
 
 % Default parameter is the function is called without parameter
-params.layerInd = 6; 
+params.layerInd = 7; 
 params.numJitter = 16; 
 params.model = 'caffe'; 
 params.device = 0; 
