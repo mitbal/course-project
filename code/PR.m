@@ -1,6 +1,6 @@
 function [rec,prec,ap] = PR(scores, gt, cli, ci)
 
-draw = true;
+draw = false;
 
 [so,si]=sort(-scores);
 tp=gt(si)>0;
