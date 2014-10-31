@@ -16,8 +16,8 @@ function [count_boxes, features] = extract_feature_all_boxes(imgs,params)
 		disp(['number of regions ', num2str(count_boxes(i))]);
         for j=1:length(boxes{i})
             box = boxes{i}(j, :);
-            x = box(1); y = box(2); w = box(3); h = box(4);
-            patch = im(x:w, y:h, :);
+            y1 = box(1); x1 = box(2); y2 = box(3); x2 = box(4);
+            patch = im(y1:y2, x1:x2, :);
             [rep, ~, ~] = caffe_features(patch, params);
             features{counter} = mean(rep, 2);
             counter = counter + 1;
