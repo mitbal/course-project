@@ -8,14 +8,14 @@ disp(['Load extracted data']);
 tic
 feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
 					'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
-features_name = ['../data/', params.model, '/', 'VOC07-ss', feature_params, '.mat'];
+features_name = ['../data/', params.model, '/', 'VOC07-sstest_', feature_params, '.mat'];
 load(features_name);
 toc
 
 % Load pre-trained model
 disp(['Load pre-trained model']);
 tic
-model_name = ['../models/caffe/VOC07-ss2.mat'];
+model_name = ['../models/caffe/VOC07-ss.mat'];
 load(model_name);
 toc
 
@@ -47,8 +47,8 @@ for i=1:num_c
 end
 
 % It's prediction time
-for ci=1:num_c
-	for cli=2:9
+for ci=6:6
+	for cli=1:20
 
 		tic
 		model = models{cli, ci};
