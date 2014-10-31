@@ -38,22 +38,22 @@ for i=1:length(testImgs)
 end
 
 % Extract the CNN features for all proposed regions
-%[trainBoxes, trainFcell] = extract_feature_all_boxes(trainImgs, params);
-[testBoxes, testFcell] = extract_feature_all_boxes(testImgs, params);
+[trainBoxes, trainFcell] = extract_feature_all_boxes(trainImgs, params);
+% [testBoxes, testFcell] = extract_feature_all_boxes(testImgs, params);
 
 % Convert from cell to matrix
-%trainF = zeros(length(trainFcell), length(trainFcell{1}));
-testF = zeros(length(testFcell), length(testFcell{1}));
+trainF = zeros(length(trainFcell), length(trainFcell{1}));
+% testF = zeros(length(testFcell), length(testFcell{1}));
 
-%for i=1:length(trainFcell)
-%	trainF(i, :) = trainFcell{i};
-%end
-for i=1:length(testFcell)
-	testF(i, :) = testFcell{i};
+for i=1:length(trainFcell)
+	trainF(i, :) = trainFcell{i};
 end
+% for i=1:length(testFcell)
+% 	testF(i, :) = testFcell{i};
+% end
 
 % Save the output to file
 featureParams = [num2str(params.layerInd),'_',num2str(params.numJitter),'_',num2str(params.modelItr),'_',num2str(params.modelDataset)];
-%save(['../data/', params.model,'/', 'VOC07', featureParams,'.mat'], 'trainBoxes', 'trainF', 'trainL', 'testBoxes', 'testF', 'testL');
-save(['../data/', params.model, '/', 'VOC07-sstest_', featureParams, '.mat'], 'testBoxes', 'testF', 'testL', '-v7.3');
+save(['../data/', params.model,'/', 'VOC07-sstrain_', featureParams,'.mat'], 'trainBoxes', 'trainF', 'trainL', '-v7.3');
+%save(['../data/', params.model, '/', 'VOC07-sstest_', featureParams, '.mat'], 'testBoxes', 'testF', 'testL', '-v7.3');
 
