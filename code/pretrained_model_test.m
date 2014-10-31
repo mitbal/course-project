@@ -14,7 +14,7 @@ clear trainF; clear testF; clear testL;
 % Load the extracted data
 disp(['Load extracted data']);
 tic
-features_name = ['../data/', params.model, '/', 'VOC07-ss', feature_params, '.mat'];
+features_name = ['../data/', params.model, '/', 'VOC07-sstest_', feature_params, '.mat'];
 load(features_name);
 toc
 
@@ -69,7 +69,7 @@ for ci=1:num_c
 				end_index = size(testF, 1);
 			end
 
-			dec = model.w * testF(start_index:end_index, :)' - model.bias;
+			dec = model.w * testF(start_index:end_index, :)';
 			dec_value = [dec_value; dec'];
 		end
 		toc
@@ -99,8 +99,8 @@ for ci=1:num_c
 
 		% Calculate precision, recall, and average precision
 		disp(['Calculate precision, recall, and average precision...']);
-		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli), cli, ci);
-		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli), cli, ci)
+		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli), cli, ci)
+		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli), cli, ci);
 		toc
 
 		% Save the result to file
