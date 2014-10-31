@@ -7,10 +7,10 @@ function [boxes] = selective_search(im)
 
 	% set similarity measure
 	simFunctionHandles = {@SSSimColourTextureSizeFillOrig, @SSSimTextureSizeFill, @SSSimBoxFillOrig, @SSSimSize};
-	simFunctionHandles = simFunctionHandles(1);
+	simFunctionHandles = simFunctionHandles(1:2);
 
 	% parameter for Felzenszwalb segmentation algorithm
-	k = 100;
+	k = 200;
 	minSize = k;
 	sigma = 0.8;
 
