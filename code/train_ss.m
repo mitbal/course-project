@@ -61,19 +61,24 @@ function [models, train_sums] = train_ss(cli)
     Sp = trainF(index, :);
     numPos = size(Sp, 1);
 
+    if numPos > 200000
+        numPos = 200000;
+    end
+
     index = trainL2(:, cli) < 0;
     Sn = trainF(index, :);
     clear trainF;
 
-    for ci=1:num_c
+    for ci=6:6
         disp(['Now training data from class: ', num2str(cli), ' and with C: ', num2str(ci)]);
         tic
 
         Snprime = Sn(1:numPos, :);
+        Spprime = Sp(1:numPos, :);
         numNeg = size(Snprime, 1);
         disp(['Iteration: 1 ', 'The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);
-        D = sparse([Sp; Snprime]);
-        clear Snprime;
+        D = sparse([Spprime; Snprime]);
+        clear Snprime; clear Spprime;
 
         trainL3 = [ones(numPos,1); -ones(numNeg, 1)];
         model = liblinear_train(trainL3, D, ['-c ', num2str(Cs(ci)) ' -s 2']);
@@ -90,11 +95,12 @@ function [models, train_sums] = train_ss(cli)
         if size(Snprime, 1) > sisa
             Snprime = Snprime(1:sisa, :);
         end
+        Spprime = Sp(1:numPos, 1);
 
         % Retrain using hard negative training data
-        D = sparse([Sp; Snprime]);
+        D = sparse([Spprime; Snprime]);
         numNeg = size(Snprime, 1);
-        clear Snprime;
+        clear Snprime; clear Spprime;
 
         tic
         disp(['Iteration: 2 ', 'The number of positive samples: ', num2str(numPos), ' negative: ', num2str(numNeg)]);

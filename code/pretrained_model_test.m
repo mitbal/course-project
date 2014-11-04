@@ -1,21 +1,27 @@
 setParams;
 addpath('/home/iqbal/liblinear-1.93/matlab');
-% This function load the models that is trained with all regions proposed by selective search
-% Hopefuly the average precision will improve
+% The same function with train_selective_search but now the
+% training is using data without region proposal (standard)
+% This is the second optimized code by using simple dot product to perform the prediction
+
+% Load to get training data label due to liblinear bug
+feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
+					'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
+load(['../data/', params.model, '/', 'VOC07_Feat_', feature_params, '.mat']);
+% Only need train label, delete everything else
+clear trainF; clear testF; clear testL;
 
 % Load the extracted data
 disp(['Load extracted data']);
 tic
-feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
-					'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
-features_name = ['../data/', params.model, '/', 'VOC07-ss', feature_params, '.mat'];
+features_name = ['../data/', params.model, '/', 'VOC07-sstest_', feature_params, '.mat'];
 load(features_name);
 toc
 
 % Load pre-trained model
 disp(['Load pre-trained model']);
 tic
-model_name = ['../models/caffe/VOC07-ss2.mat'];
+model_name = ['../models/caffe/', 'VOC07_Feat_', feature_params, '.mat'];
 load(model_name);
 toc
 
@@ -28,7 +34,7 @@ end
 toc
 tic
 for i=1:size(testF, 1)
-	testF(i, :) = testF(i, :) ./ train_sums;
+	testF(i, :) = testF(i, :) ./ sums;
 end
 toc
 tic
@@ -37,7 +43,7 @@ for i=1:size(testF, 1)
 end
 toc
 
-num_c = 8; % Number of different penalty parameter
+num_c = 10; % Number of different penalty parameter
 num_classes = 20; % Number of classes in VOC dataset
 
 c = 0.1;
@@ -48,7 +54,7 @@ end
 
 % It's prediction time
 for ci=1:num_c
-	for cli=2:9
+	for cli=1:num_classes
 
 		tic
 		model = models{cli, ci};
@@ -68,7 +74,13 @@ for ci=1:num_c
 		end
 		toc
 
-		% Aggregate the result. There are two approaches, the maximum value and the mean.
+		% Due to bug in liblinear, the first label in the training data is always
+		% taken as class 1
+		if trainL(1, cli) == -1
+            dec_value = -dec_value;
+        end
+
+		% Aggregate the result. There are two approaches, the maximum value and the average.
 		disp(['Aggregate result...']);
 		tic
 		num_imgs = size(testL, 1);
@@ -93,6 +105,6 @@ for ci=1:num_c
 
 		% Save the result to file
 		disp(['Saving...']);
-		save(['../results/', params.model, '/', 'VOC07-sstrain', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
+		save(['../results/', params.model, '/', 'VOC07-ss', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
 	end
 end

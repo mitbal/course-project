@@ -14,6 +14,6 @@ Works wonderfully on Ubuntu 12.04 64 bit installation
 
 ## Prerequisite
 - Install [caffe][https://github.com/BVLC/caffe]. Follow the installation instruction. Do not forget to download the image mean.
-- Install liblinear
-
+- Install liblinear.
+- Install SelectiveSearch for segmentation. Insert it into code directory.
 
