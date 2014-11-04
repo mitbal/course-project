@@ -30,14 +30,15 @@ for ii=1:num_train
 		Index = find(not(cellfun('isempty', IndexC)));
         disp(['  Object: ' num2str(jj) ' class: ' label]);
         
-		x = rec.objects(jj).bndbox.xmin;
-		y = rec.objects(jj).bndbox.ymin;
-		w = rec.objects(jj).bndbox.xmax - x;
-		h = rec.objects(jj).bndbox.ymax - y;
+		x1 = rec.objects(jj).bndbox.xmin;
+		y1 = rec.objects(jj).bndbox.ymin;
+		x2 = rec.objects(jj).bndbox.xmax;
+		y2 = rec.objects(jj).bndbox.ymax;
 
-		patch = im(y:y+h, x:x+w, :);
+		patch = im(y1:y2, x1:x2, :);
 
 		[rep, ~, ~] = caffe_features(patch, params);
+
 		labels{counter} = Index;
 		features{counter} = mean(rep, 2);
         counter = counter + 1;
