@@ -7,7 +7,7 @@ function [models, train_sums] = train_ss(cli)
 	tic
 	feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
 	                    '_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
-	features_name = ['../data/', params.model, '/', 'VOC07-sstrain', feature_params, '.mat'];
+	features_name = ['../data/', params.model, '/', 'VOC07-sstrain_', feature_params, '.mat'];
 	load(features_name);
 	toc
 
