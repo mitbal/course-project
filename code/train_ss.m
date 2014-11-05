@@ -95,7 +95,7 @@ function [models, train_sums] = train_ss(cli)
         if size(Snprime, 1) > sisa
             Snprime = Snprime(1:sisa, :);
         end
-        Spprime = Sp(1:numPos, 1);
+        Spprime = Sp(1:numPos, :);
 
         % Retrain using hard negative training data
         D = sparse([Spprime; Snprime]);
