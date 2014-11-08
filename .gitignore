@@ -1,1 +1,11 @@
-*.swp
+# Ignore matlab temporary files
+*~
+
+# Ignore latex generated files
+*.aux
+*.bbl
+*.blg
+*.log
+*.pdf
+*.gz
+
