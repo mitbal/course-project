@@ -1,15 +1,24 @@
 % Test selective search selectively
+setParams;
 
 % Load selective search model
-model_name = ['../models/caffe/', 'VOC07-ss_', feature_params, '.mat'];
+feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
+						'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
+model_name = ['../models/caffe/', 'VOC07-selective_', feature_params, '.mat'];
 load(model_name);
 
-for ii=1:20
+num_c = 6;
+c = 0.1;
+for i=1:num_c
+	Cs(i) = c;
+	c = c*2;
+end
+
+for ii=1:1
 	% Load extracted testing data
 	disp(['Load extracted data']);
 	tic
-	feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
-						'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
+	
 	features_name = ['../data/', params.model, '/', 'VOC07-sstest_', feature_params, '.mat'];
 	load(features_name);
 	toc
@@ -23,7 +32,7 @@ for ii=1:20
 	toc
 	tic
 	for i=1:size(testF, 1)
-	    testF(i, :) = testF(i, :) ./ train_sums(ii);
+	    testF(i, :) = testF(i, :) ./ train_sums(ii, :);
 	end
 	toc
 	tic
@@ -31,17 +40,17 @@ for ii=1:20
 	    testF(i, :) = testF(i, :) ./ sqrt(sum(testF(i, :).^2));
 	end
 	toc
-
+%%
 	for jj=6:6
 		tic
-		model = models{cli, ci};
-		disp(['Prediction for class: ', num2str(ii), ' and C: ', num2str(ci)]);
+		model = models{ii, jj};
+		disp(['Prediction for class: ', num2str(ii), ' and C: ', num2str(jj)]);
 		dec_value = [];
 		div = 5000;
 		num_iter = uint32(size(testF, 1) / div);
-		for ii=1:num_iter
-			start_index = (ii-1)*div + 1;
-			end_index = ii*div;
+		for kk=1:num_iter
+			start_index = (kk-1)*div + 1;
+			end_index = kk*div;
 			if end_index > size(testF, 1)
 				end_index = size(testF, 1);
 			end
@@ -58,25 +67,30 @@ for ii=1:20
 		scores_sum = zeros(num_imgs, 1);
 		scores_max = zeros(num_imgs, 1);
 		boxes = cumsum(testBoxes);
-		for ii=1:num_imgs
-			if ii == 1
-				scores_sum(ii) = mean(dec_value(1:boxes(ii)));
-				scores_max(ii) = max(dec_value(1:boxes(ii)));
+		for kk=1:num_imgs
+			if kk == 1
+				scores_sum(kk) = mean(dec_value(1:boxes(kk)));
+				scores_max(kk) = max(dec_value(1:boxes(kk)));
 			else
-				scores_sum(ii) = mean(dec_value(boxes(ii-1)+1:boxes(ii)));
-				scores_max(ii) = max(dec_value(boxes(ii-1)+1:boxes(ii)));
+				scores_sum(kk) = mean(dec_value(boxes(kk-1)+1:boxes(kk)));
+				scores_max(kk) = max(dec_value(boxes(kk-1)+1:boxes(kk)));
 			end
-		end
+        end
+        
+        label = scores_max > 0;
+        label = label * 2 -1;
+        corr = sum(testL(:, ii) == label);
+        acc = corr / size(testL, 1)
 
 		% Calculate precision, recall, and average precision
 		disp(['Calculate precision, recall, and average precision...']);
-		[rec_max{cli, ci}, prec_max{cli, ci}, aps_max(cli, ci)] = PR(scores_max, testL(:, cli), cli, ci)
-		[rec_sum{cli, ci}, prec_sum{cli, ci}, aps_sum(cli, ci)] = PR(scores_sum, testL(:, cli), cli, ci);
+		[rec_max{ii, jj}, prec_max{ii, jj}, aps_max(ii, jj)] = PR(scores_max, testL(:, ii), ii, jj)
+		[rec_sum{ii, jj}, prec_sum{ii, jj}, aps_sum(ii, jj)] = PR(scores_sum, testL(:, ii), ii, jj);
 		toc
 
 		% Save the result to file
 		disp(['Saving...']);
-		save(['../results/', params.model, '/', 'VOC07-sstrain', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
+		save(['../results/', params.model, '/', 'VOC07-selective_', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
 	end
-	
+	clear testF;
 end
