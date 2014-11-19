@@ -1,5 +1,6 @@
-%% Extract training samples, both positive and negative
+%% Extract training samples, only positive now
 
+% Load and prepare data
 setParams;
 addpath('/home/iqbal/caffe/matlab/caffe/');
 addpath('/home/iqbal/data/VOC07/VOCdevkit/');
@@ -17,11 +18,11 @@ num_train = length(train_imgs);
 features = cell(20, 1);
 counter = zeros(20, 2);
 for ii=1:20
-	features{ii} = struct('positive', cell(1), 'negative', cell(1));
+	features{ii} = struct('positive', cell(1), 'imdex', cell(1), 'box', cell(1));
 end
 
 threshold = 0.3;
-%%
+%% Run for all images
 tic
 for ii=1:1
     tic
@@ -41,7 +42,7 @@ for ii=1:1
 		xa2 = boxes(jj, 4);
         
         patch = im(ya1:ya2, xa1:xa2, :);
-		%[rep, ~, ~] = caffe_features(patch, params);
+		[rep, ~, ~] = caffe_features(patch, params);
         
         % Determine if this regions intersect with any object
 		for kk=1:num_object
@@ -99,37 +100,16 @@ for ii=1:1
                 disp(['positive ' label]);
                 disp(['box ' num2str(boxes(jj, :)) ' ground truth ' num2str(obj.bbox) ' overlap ' num2str(overlap_ratio)]);
                 counter(index, 1) = counter(index, 1) + 1;
-				%features{index}.positive{counter(index, 1)} = mean(rep, 2);
-                
-                imshow(im);
-                hold on;
-                rectangle('Position', [xb1 yb1 xb2-xb1 yb2-yb1], 'EdgeColor', 'b');
-                rectangle('Position', [xa1 ya1 xa2-xa1 ya2-ya1], 'EdgeColor', 'r');
-                hold off;
-                imshow(patch);
-                eye(2);
-			elseif overlap_ratio < threshold && overlap_ratio > 0
-				% neither positive nor negative
-			else
-				% negative sample
-                counter(index, 2) = counter(index, 2) + 1;
-				%features{index}.negative{counter(index, 2)} = mean(rep, 2);
-                
-                imshow(im);
-                hold on;
-                rectangle('Position', [xb1 yb1 xb2-xb1 yb2-yb1], 'EdgeColor', 'b');
-                rectangle('Position', [xa1 ya1 xa2-xa1 ya2-ya1], 'EdgeColor', 'w');
-                hold off;
-                imshow(patch);
-                eye(2);
+				features{index}.positive{counter(index, 1)} = mean(rep, 2);
+                features{index}.imdex{counter(index, 1)} = ii;
+                features{index}.box{counter(index, 1)} = boxes(jj, :);
 			end
-		end
+        end
     end
-    
     toc
 end
 
 feature_params = [num2str(params.layerInd) '_' num2str(params.numJitter)];
-save(['../data/caffe/VOC07-ssfull_' feature_params '.mat'], 'features', '-v7.3');
+save(['../data/caffe/VOC07-sspos_' feature_params '.mat'], 'features', '-v7.3');
 
 toc
