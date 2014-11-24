@@ -4,44 +4,45 @@ setParams;
 % Load selective search model
 feature_params = [num2str(params.layerInd), '_', num2str(params.numJitter), ...
 						'_', num2str(params.modelItr), '_', num2str(params.modelDataset)];
-model_name = ['../models/caffe/', 'VOC07-selective_', feature_params, '.mat'];
+%model_name = ['../models/caffe/', 'VOC07-selective_', feature_params, '.mat'];
+model_name = ['../models/caffe/selective-VOC07.mat'];
 load(model_name);
 
-num_c = 6;
+% Load extracted testing data
+disp(['Load extracted data']);
+tic
+features_name = ['../data/', params.model, '/', 'VOC07-sstest2_', feature_params, '.mat'];
+load(features_name);
+toc
+
+% Normalize
+disp(['Normalization...']);
+tic
+for i=1:size(testF, 1)
+    testF(i, :) = sign(testF(i, :)) .* abs(testF(i, :)).^2;
+end
+toc
+tic
+for i=1:size(testF, 1)
+    testF(i, :) = testF(i, :) ./ train_sums;
+end
+toc
+tic
+for i=1:size(testF, 1)
+    testF(i, :) = testF(i, :) ./ sqrt(sum(testF(i, :).^2));
+end
+toc
+
+num_class = 20;
+num_c = 8;
 c = 0.1;
 for i=1:num_c
 	Cs(i) = c;
 	c = c*2;
 end
 
-for ii=1:1
-	% Load extracted testing data
-	disp(['Load extracted data']);
-	tic
-	
-	features_name = ['../data/', params.model, '/', 'VOC07-sstest_', feature_params, '.mat'];
-	load(features_name);
-	toc
-
-	% Normalize
-	disp(['Normalization...']);
-	tic
-	for i=1:size(testF, 1)
-	    testF(i, :) = sign(testF(i, :)) .* abs(testF(i, :)).^2;
-	end
-	toc
-	tic
-	for i=1:size(testF, 1)
-	    testF(i, :) = testF(i, :) ./ train_sums(ii, :);
-	end
-	toc
-	tic
-	for i=1:size(testF, 1)
-	    testF(i, :) = testF(i, :) ./ sqrt(sum(testF(i, :).^2));
-	end
-	toc
-%%
-	for jj=6:6
+for ii=1:num_class
+	for jj=2:8
 		tic
 		model = models{ii, jj};
 		disp(['Prediction for class: ', num2str(ii), ' and C: ', num2str(jj)]);
@@ -90,7 +91,6 @@ for ii=1:1
 
 		% Save the result to file
 		disp(['Saving...']);
-		save(['../results/', params.model, '/', 'VOC07-selective_', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
+		save(['../results/', params.model, '/', 'selective-VOC07_', feature_params, '.mat'], 'Cs', 'aps_max', 'aps_sum', 'rec_max', 'rec_sum', 'prec_max', 'prec_sum');
 	end
-	clear testF;
 end
