@@ -24,7 +24,7 @@ end
 threshold = 0.3;
 %% Run for all images
 tic
-for ii=1:1
+for ii=1:num_train
     tic
     disp(['Image: ' num2str(ii)]);
 	impath = [imdirpath train_imgs{ii} '.jpg'];

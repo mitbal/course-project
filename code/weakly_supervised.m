@@ -40,7 +40,7 @@ save('../models/caffe/box-VOC07-sstrain_7_16_0_imagenet.mat', 'all_boxes', 'coun
 tic
 disp(['Load training data and model']);
 load(['../data/caffe/VOC07-sstrain_7_16_0_imagenet.mat']);
-load(['../models/caffe/VOC07-ss_7_16_0_imagenet.mat']);
+load(['../models/caffe/VOC07-ss.mat']);
 toc
 
 % Normalization
